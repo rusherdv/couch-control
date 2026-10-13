@@ -140,6 +140,8 @@ async function connect({ pairing = false } = {}) {
     setState({ status: "error", error: networkError(netErr) });
     pairingResolve?.(false);
     pairingResolve = null;
+    // macOS denies the first attempt while the Local Network alert is on screen: keep retrying once paired.
+    if (config.cert) setTimeout(() => { if (connectToken === token) connect(); }, 5000);
     return;
   }
 

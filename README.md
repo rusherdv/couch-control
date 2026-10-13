@@ -37,6 +37,14 @@ Download the latest release for macOS (`.dmg`) or Windows (`.exe`) from the [Rel
 >
 > On macOS, allow **Local Network** access when asked (System Settings → Privacy & Security → Local Network). Without it the app cannot reach the TV and pairing fails.
 
+#### macOS: pairing fails / "macOS is blocking local network access"
+
+No Apple certificate is needed: the ad-hoc signed release builds get the Local Network prompt like any other app.
+
+- **v1.0.0 and v1.0.1 never showed the prompt.** Their executable kept the Mach-O UUID of the stock Electron binary, so macOS mistook the app for a generic "Electron" app and blocked it silently. v1.0.2 gives the executables their own UUID (`scripts/after-pack.cjs`). Update to v1.0.2 or later, open the app and press **Allow** when macOS asks.
+- **No prompt after updating?** Check System Settings → Privacy & Security → Local Network and turn on **Couch Control**.
+- **Running from source** (`npm start` / `npm run dev`) works without the prompt: apps launched from a terminal inherit the terminal's Local Network permission.
+
 ### Run from source
 
 ```bash
