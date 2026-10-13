@@ -12,7 +12,7 @@ const TYPES = { mp4: "video/mp4", m4v: "video/mp4", mov: "video/mp4", webm: "vid
 
 export function createCast(getHost, onStatus, t = (k) => k) {
   const status = { connected: false, app: null, statusText: null, volume: null, media: null, mine: false, error: null };
-  let client = null, player = null, joinedSession = null, reconnectTimer = null, server = null, stopped = false;
+  let client = null, player = null, joinedSession = null, lastMedia = null, reconnectTimer = null, server = null, stopped = false;
   const emit = () => onStatus({ ...status });
 
   function cleanup() {
@@ -62,11 +62,14 @@ export function createCast(getHost, onStatus, t = (k) => k) {
   }
   function handleMediaStatus(m) {
     if (!m) { status.media = null; return emit(); }
-    const md = m.media?.metadata || {};
+    // MEDIA_STATUS only carries `media` (duration, metadata) when it changed: keep the last one for the same session.
+    if (m.media) lastMedia = { session: m.mediaSessionId, media: m.media };
+    const media = (lastMedia?.session === m.mediaSessionId && lastMedia.media) || {};
+    const md = media.metadata || {};
     status.media = {
       state: m.playerState, title: md.title || null, subtitle: md.subtitle || md.artist || md.seriesTitle || null,
-      image: md.images?.[0]?.url || null, duration: m.media?.duration || 0, currentTime: m.currentTime || 0,
-      contentId: m.media?.contentId || null, contentType: m.media?.contentType || null,
+      image: md.images?.[0]?.url || null, duration: media.duration || 0, currentTime: m.currentTime || 0,
+      contentId: media.contentId || null, contentType: media.contentType || null,
       artist: md.artist || null, album: md.albumName || null, supports: m.supportedMediaCommands || 0, appName: status.app?.name || null,
     };
     emit();

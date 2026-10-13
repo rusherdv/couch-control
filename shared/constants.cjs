@@ -93,4 +93,13 @@ const AC_FANS = [
 ];
 const acKey = (s) => (s.power ? `${s.mode}|${s.temp}|${s.fan}` : "off");
 
-module.exports = { KEY, APPS, APP_NAMES, INPUTS, INPUT_PKGS, hdmiInputs, HDMI_BASE_DEFAULT, DEVICE_TYPES, PKG_HINTS, AC_MODES, AC_FANS, acKey };
+// Apps played through Cast (e.g. Spotify Connect) run inside the Cast receiver, so the TV reports this
+// package as the foreground app; the real app is the one named by the active Cast session.
+const CAST_RECEIVER_PKG = "com.google.android.apps.mediashell";
+function onScreenApp(pkg, castApp) {
+  const a = APPS.find((x) => x.pkg.includes(pkg));
+  if (a || pkg !== CAST_RECEIVER_PKG || !castApp || castApp.idle) return a;
+  return APPS.find((x) => x.name.toLowerCase() === String(castApp.name || "").toLowerCase());
+}
+
+module.exports = { KEY, APPS, CAST_RECEIVER_PKG, onScreenApp, APP_NAMES, INPUTS, INPUT_PKGS, hdmiInputs, HDMI_BASE_DEFAULT, DEVICE_TYPES, PKG_HINTS, AC_MODES, AC_FANS, acKey };

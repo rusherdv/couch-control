@@ -1,4 +1,4 @@
-const { APPS, INPUT_PKGS, hdmiInputs, HDMI_BASE_DEFAULT, DEVICE_TYPES, AC_MODES, AC_FANS } = window.tv.constants;
+const { APPS, onScreenApp, INPUT_PKGS, hdmiInputs, HDMI_BASE_DEFAULT, DEVICE_TYPES, AC_MODES, AC_FANS } = window.tv.constants;
 const $ = (s) => document.querySelector(s);
 
 // ---------- i18n (English source strings, dictionaries from shared/i18n.cjs) ----------
@@ -52,6 +52,7 @@ let learnSeq = null;
 let sliderBusy = false;
 const appByName = (name) => APPS.find((x) => x.name.toLowerCase() === String(name || "").toLowerCase());
 const appByPkg = (pkg) => APPS.find((a) => a.pkg.includes(pkg));
+const currentApp = () => onScreenApp(state.app, castState.app);
 const isMediaApp = (a) => !!a && a.media !== false;
 const audioCfg = () => ({ soundbar: !!config.audio?.soundbar, ratio: Math.max(1, Number(config.audio?.ratio) || 3), name: config.audio?.name || t("Sound bar") });
 const volRatio = () => (audioCfg().soundbar ? audioCfg().ratio : 1);
@@ -162,7 +163,7 @@ function appButton(a) {
   return b;
 }
 function markCurrentApp() {
-  const cur = appByPkg(state.app)?.id;
+  const cur = currentApp()?.id;
   document.querySelectorAll(".app").forEach((b) => b.classList.toggle("current", b.dataset.app === cur));
 }
 
@@ -238,7 +239,7 @@ function makeTimeline(curId, seekId, durId) {
   const tl = { media: null, base: { t: 0, at: 0 }, busy: false, tick: null };
   const paint = () => {
     const m = tl.media; if (!m || tl.busy) return;
-    const pos = m.state === "PLAYING" ? Math.min(m.duration || Infinity, tl.base.t + (Date.now() - tl.base.at) / 1000) : tl.base.t;
+    const pos = m.state === "PLAYING" ? Math.min(m.duration > 0 ? m.duration : Infinity, tl.base.t + (Date.now() - tl.base.at) / 1000) : tl.base.t;
     el.seek.value = Math.round(pos); el.seek.style.setProperty("--pct", `${(100 * pos) / Math.max(1, m.duration || 1)}%`);
     el.cur.textContent = fmtTime(pos);
   };
@@ -246,7 +247,8 @@ function makeTimeline(curId, seekId, durId) {
     tl.media = m;
     if (!m) { clearInterval(tl.tick); tl.tick = null; return; }
     tl.base = { t: m.currentTime || 0, at: Date.now() };
-    el.seek.max = Math.max(1, Math.round(m.duration || 0)); el.dur.textContent = fmtTime(m.duration);
+    el.seek.max = Math.max(1, Math.round(m.duration || 0)); el.dur.textContent = m.duration > 0 ? fmtTime(m.duration) : "";
+    el.seek.hidden = !(m.duration > 0);
     paint(); if (!tl.tick) tl.tick = setInterval(paint, 1000);
   };
   el.seek.addEventListener("input", () => { tl.busy = true; el.cur.textContent = fmtTime(el.seek.value); });
@@ -268,7 +270,7 @@ function bgSession() {
   const cs = castState, m = cs.media;
   if (!m || cs.mine || !cs.app || cs.app.idle) return null;
   if (!["PLAYING", "PAUSED", "BUFFERING"].includes(m.state)) return null;
-  const onScreen = appByPkg(state.app);
+  const onScreen = currentApp();
   if (onScreen && onScreen.name.toLowerCase() === String(cs.app.name).toLowerCase()) return null; // the Now tile already covers it
   return m;
 }
@@ -432,7 +434,13 @@ $("#cfgSave").addEventListener("click", async () => {
   await window.tv.saveConfig({ ip, name });
   if (!changed) window.tv[config.paired ? "reconnect" : "pair"]();
 });
-$("#pinSend").addEventListener("click", () => { const c = $("#pinInput").value.trim().toUpperCase(); if (c) { window.tv.sendCode(c); $("#pinInput").value = ""; } });
+$("#pinSend").addEventListener("click", async () => {
+  const c = $("#pinInput").value.trim().toUpperCase();
+  if (!c) return;
+  const r = await window.tv.sendCode(c);
+  if (r?.ok) { $("#pinInput").value = ""; return; }
+  const box = $("#pairStatus"); box.className = "status-box err"; box.textContent = r?.error || t("Connection error.");
+});
 $("#pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#pinSend").click(); });
 $("#cfgForget").addEventListener("click", () => window.tv.forget());
 function renderInputEditor() {
@@ -472,7 +480,7 @@ $("#cfgLanguage").addEventListener("change", (e) => window.tv.saveConfig({ langu
 function renderHome() {
   const connected = state.status === "connected";
   const off = state.powered === false;
-  const a = appByPkg(state.app);
+  const a = currentApp();
   // Media app on screen: assume it is playing when it appears, then follow the cast session state if there is one.
   const media = connected && !off && isMediaApp(a);
   if (media) {

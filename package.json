@@ -1,7 +1,7 @@
 {
   "name": "couch-control",
   "productName": "Couch Control",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Menu bar / tray remote for Google TV (Android TV) plus air conditioner control through a Broadlink IR blaster. macOS and Windows.",
   "author": {
     "name": "rusherdv",
@@ -89,6 +89,7 @@
         }
       ],
       "icon": "build/icon.png",
+      "identity": "-",
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
       "extendInfo": {

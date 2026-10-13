@@ -33,7 +33,9 @@ A menu bar (macOS) / tray (Windows) control center for a **Google TV / Android T
 
 Download the latest release for macOS (`.dmg`) or Windows (`.exe`) from the [Releases](https://github.com/rusherdv/couch-control/releases) page.
 
-> The builds are not code-signed. On macOS, right-click the app → Open the first time (or run `xattr -dr com.apple.quarantine "/Applications/Couch Control.app"`). On Windows, SmartScreen → More info → Run anyway.
+> The builds are not code-signed (macOS builds are ad-hoc signed). On macOS, right-click the app → Open the first time (or run `xattr -dr com.apple.quarantine "/Applications/Couch Control.app"`). On Windows, SmartScreen → More info → Run anyway.
+>
+> On macOS, allow **Local Network** access when asked (System Settings → Privacy & Security → Local Network). Without it the app cannot reach the TV and pairing fails.
 
 ### Run from source
 

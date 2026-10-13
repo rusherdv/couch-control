@@ -7,9 +7,10 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "node:http";
+import { connect as tcpConnect } from "node:net";
 import constants from "./shared/constants.cjs";
 import i18n from "./shared/i18n.cjs";
-const { KEY, APP_NAMES, APPS, PKG_HINTS, AC_MODES, AC_FANS, acKey, INPUT_PKGS, DEVICE_TYPES } = constants;
+const { KEY, APP_NAMES, APPS, onScreenApp, PKG_HINTS, AC_MODES, AC_FANS, acKey, INPUT_PKGS, DEVICE_TYPES } = constants;
 let t = i18n.makeT("en");
 const localeFor = () => (config.language && config.language !== "auto" ? config.language : app.getLocale());
 let activeInputId = null; // last input chosen from the panel (the TV only reports "input mode", not which one)
@@ -65,7 +66,7 @@ const state = {
 let tv = null;
 let pairingResolve = null;
 let castState = { connected: false };
-const cast = createCast(() => config.ip, (s) => { castState = s; broadcast("cast:state", s); }, (k, v) => t(k, v));
+const cast = createCast(() => config.ip, (s) => { castState = s; broadcast("cast:state", s); updateTray(); }, (k, v) => t(k, v));
 let dialogOpen = false;
 let adbState = { available: false, connected: false };
 // ---- Air conditioner (Broadlink RM) ----
@@ -108,16 +109,46 @@ function setState(patch) {
   if (DEV) console.log("[state]", JSON.stringify(state));
 }
 
+// Plain TCP probe of the TV. The remote library swallows socket errors, so this is how we tell
+// "macOS is blocking local network access" (EHOSTUNREACH/EPERM despite the TV being up) apart
+// from a wrong code or a cancelled pairing.
+function probe(host, port, timeout = 4000) {
+  return new Promise((resolve) => {
+    const sock = tcpConnect({ host, port, family: 4 });
+    const done = (code) => { sock.destroy(); resolve(code); };
+    sock.setTimeout(timeout, () => done("ETIMEDOUT"));
+    sock.once("connect", () => done(null));
+    sock.once("error", (e) => done(e.code || "ERROR"));
+  });
+}
+const networkError = (code) => ["EHOSTUNREACH", "EPERM", "EACCES", "ENETUNREACH"].includes(code) && process.platform === "darwin"
+  ? t("macOS is blocking local network access. Open System Settings → Privacy & Security → Local Network, enable Couch Control and try again.")
+  : t("Could not connect. Is the TV on and on the same network?");
+
+let badCode = false;
 async function connect({ pairing = false } = {}) {
   if (!config.ip) return setState({ status: "disconnected" });
   disconnect();
-  setState({ status: pairing ? "pairing" : "connecting", error: null });
+  badCode = false;
+  // "pairing" (which shows the code box) only once the TV is actually displaying the code.
+  setState({ status: "connecting", error: null });
+  const token = {};
+  connectToken = token;
+  const netErr = await probe(config.ip, pairing || !config.cert ? 6467 : 6466);
+  if (connectToken !== token) return;
+  if (netErr) {
+    setState({ status: "error", error: networkError(netErr) });
+    pairingResolve?.(false);
+    pairingResolve = null;
+    return;
+  }
 
   tv = createAndroidRemote(config.ip, {
     ...(config.cert && !pairing ? { cert: config.cert } : {}),
     service_name: "TV Remote macOS",
     manufacturer: "Apple",
     model: "Mac",
+    debug: DEV,
   });
   const me = tv;
   me.on("secret", () => setState({ status: "pairing" }));
@@ -144,7 +175,7 @@ async function connect({ pairing = false } = {}) {
     const ok = await me.start();
     if (me !== tv) return;
     if (!ok && state.status !== "connected") {
-      setState({ status: "error", error: config.cert ? t("Could not connect. Is the TV on and on the same network?") : t("Pairing cancelled or failed.") });
+      setState({ status: "error", error: config.cert ? t("Could not connect. Is the TV on and on the same network?") : badCode ? t("Wrong code. Press “Save and connect” to get a new one.") : t("Pairing cancelled or failed.") });
       pairingResolve?.(false);
       pairingResolve = null;
     }
@@ -153,7 +184,9 @@ async function connect({ pairing = false } = {}) {
     setState({ status: "error", error: e.message });
   }
 }
+let connectToken = null;
 function disconnect() {
+  connectToken = null;
   try { tv?.stop(); } catch {}
   tv = null;
 }
@@ -174,7 +207,16 @@ ipcMain.handle("config:save", (_e, patch) => {
   return publicConfig();
 });
 ipcMain.handle("tv:pair", () => new Promise((resolve) => { pairingResolve = resolve; connect({ pairing: true }); }));
-ipcMain.handle("tv:code", (_e, code) => tv?.sendCode(String(code).trim()) ?? false);
+ipcMain.handle("tv:code", (_e, raw) => {
+  // The code is hexadecimal; a typo would make the library drop the whole pairing session, so check it first.
+  const code = String(raw).trim().toUpperCase().replace(/O/g, "0").replace(/\s/g, "");
+  if (!/^[0-9A-F]{6}$/.test(code)) return { ok: false, error: t("The code has 6 characters (0-9 and A-F).") };
+  if (!tv || state.status !== "pairing") return { ok: false, error: t("The TV is not waiting for a code. Press “Save and connect” again.") };
+  let ok = false;
+  try { ok = tv.sendCode(code); } catch {}
+  if (!ok) badCode = true;
+  return ok ? { ok: true } : { ok: false, error: t("Wrong code. Press “Save and connect” to get a new one.") };
+});
 ipcMain.handle("tv:reconnect", () => connect());
 ipcMain.handle("tv:forget", () => { disconnect(); config.cert = null; saveConfig(); setState({ status: "disconnected" }); broadcast("config", publicConfig()); });
 ipcMain.handle("tv:key", (_e, name, long = false) => {
@@ -311,7 +353,7 @@ function trayImageFor(id) {
 }
 function updateTrayIcon() {
   const on = state.status === "connected" && state.powered !== false;
-  const a = on ? APPS.find((x) => x.pkg.includes(state.app)) : null;
+  const a = on ? onScreenApp(state.app, castState.app) : null;
   let id = a?.id || null;
   if (!id && on && INPUT_PKGS.includes(state.app) && activeInputId) {
     const type = config.inputs?.[activeInputId]?.type;
