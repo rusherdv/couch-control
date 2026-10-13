@@ -69,18 +69,6 @@
       "assets/**",
       "package.json"
     ],
-    "extraResources": [
-      {
-        "from": "vendor/platform-tools",
-        "to": "platform-tools",
-        "filter": [
-          "adb",
-          "adb.exe",
-          "*.dll",
-          "NOTICE.txt"
-        ]
-      }
-    ],
     "asar": true,
     "mac": {
       "category": "public.app-category.utilities",
@@ -106,7 +94,17 @@
       "extendInfo": {
         "LSUIElement": true,
         "NSLocalNetworkUsageDescription": "Couch Control talks to your TV, Chromecast and Broadlink on the local network."
-      }
+      },
+      "extraResources": [
+        {
+          "from": "vendor/platform-tools",
+          "to": "platform-tools",
+          "filter": [
+            "adb",
+            "NOTICE.txt"
+          ]
+        }
+      ]
     },
     "win": {
       "target": [
@@ -123,14 +121,30 @@
           ]
         }
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "extraResources": [
+        {
+          "from": "vendor/platform-tools",
+          "to": "platform-tools",
+          "filter": [
+            "adb.exe",
+            "AdbWinApi.dll",
+            "AdbWinUsbApi.dll",
+            "NOTICE.txt"
+          ]
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-${version}-win-setup.${ext}"
     },
     "dmg": {
       "sign": false
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-win-portable.${ext}"
     }
   }
 }
