@@ -1,0 +1,8 @@
+node_modules/
+dist/
+vendor/
+build/icon.icns
+build/icon.ico
+tv-cert.json
+*.log
+.DS_Store

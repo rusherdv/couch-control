@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:" />
+  <title>Remote</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="arrow" id="arrow"></div>
+  <div class="panel">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand" id="brand">
+        <span class="brand-mark"><img src="../assets/logos/google-g.svg" alt="Google" /></span>
+        <div>
+          <div class="brand-name" id="tvName">Google TV</div>
+          <div class="brand-sub" id="tvBrand">Google TV</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="menuBtn" title="More">
+          <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+        </button>
+        <button class="power-btn" id="powerBtn" title="Turn the TV on / off">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg>
+        </button>
+      </div>
+      <div class="menu" id="menu" hidden>
+        <button data-act="reconnect">Reconnect</button>
+        <button data-act="settings">Settings</button>
+        <button data-act="quit">Quit</button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="home" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button>
+      <button class="tab" data-tab="remote" title="Control"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="9"/></svg></button>
+      <button class="tab" data-tab="apps" title="Apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
+      <button class="tab" data-tab="inputs" title="Inputs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v8H4z"/><path d="M8 16v2h8v-2M9 11h6"/></svg></button>
+      <button class="tab" data-tab="keyboard" title="Keyboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg></button>
+      <button class="tab" data-tab="settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h8M16 17h4"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="14" cy="17" r="2"/></svg></button>
+    </nav>
+
+    <main class="content" id="content">
+      <!-- HOME -->
+      <section class="view active" data-view="home">
+        <div class="cc-grid">
+          <div class="cc-tile now" id="nowTile">
+            <div class="now-head">
+              <div class="now-ico" id="nowIco"></div>
+              <div class="now-meta"><div class="now-title" id="nowTitle">—</div><div class="now-sub" id="nowText"></div></div>
+            </div>
+            <div class="media-row" id="mediaCard">
+              <button class="media" data-key="MEDIA_REWIND" title="Rewind"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 6v12L2 12zM22 6v12l-9-6z"/></svg></button>
+              <button class="media play-toggle" title="Play / Pause"></button>
+              <button class="media" data-key="MEDIA_FAST_FORWARD" title="Fast forward"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 6v12l9-6zM2 6v12l9-6z"/></svg></button>
+            </div>
+            <div class="bg-progress now-timeline" id="nowTimeline" hidden><span class="time" id="nowCur">0:00</span><input type="range" id="nowSeek" min="0" max="100" value="0" /><span class="time" id="nowDur">0:00</span></div>
+            <div class="cast-media" id="castMedia" hidden>
+              <div class="cast-meta"><img id="castImg" alt="" hidden /><div><div class="cast-title" id="castTitle"></div><div class="cast-sub" id="castSub"></div></div></div>
+              <div class="slider-row"><span class="time" id="castCur">0:00</span><input type="range" id="castSeek" min="0" max="100" value="0" /><span class="time" id="castDur">0:00</span></div>
+              <div class="media-row">
+                <button class="media" data-cast="seek-back" title="−15 s"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 6v12L2 12zM22 6v12l-9-6z"/></svg></button>
+                <button class="media big" id="castPlay" title="Play / Pause"></button>
+                <button class="media" data-cast="seek-fwd" title="+15 s"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 6v12l9-6zM2 6v12l9-6z"/></svg></button>
+                <button class="media" data-cast="stop" title="Stop"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg></button>
+              </div>
+            </div>
+            <button class="chip cast-close" id="castStopApp" hidden>■ Close Cast</button>
+          </div>
+          <div class="cc-small">
+            <button class="cc-btn" id="airplayBtn" title="Open AirPlay Server on the TV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/><path d="M12 15l5 6H7z"/></svg><span>AirPlay</span></button>
+            <button class="cc-btn" id="castUrlBtn" title="Play a link on the TV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>Link</span></button>
+            <button class="cc-btn extra" id="castFileBtn" title="Send a file from this computer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg><span>File</span></button>
+            <button class="cc-btn extra" data-key="TV" title="TV input menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v8H4z"/><path d="M8 16v2h8v-2M9 11h6"/></svg><span>Inputs</span></button>
+          </div>
+        </div>
+        <div class="cc-tile bg-player" id="bgPlayer" hidden>
+          <div class="bg-row">
+            <div class="bg-ico" id="bgIco"></div>
+            <div class="bg-meta"><div class="bg-title" id="bgTitle"></div><div class="bg-sub" id="bgSub"></div></div>
+            <div class="bg-ctrl">
+              <button class="media" data-bg="prev" title="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 6v12L9 12z"/></svg></button>
+              <button class="media" id="bgPlay" title="Play / Pause"></button>
+              <button class="media" data-bg="next" title="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM4 6v12l11-6z"/></svg></button>
+            </div>
+          </div>
+          <div class="bg-progress"><span class="time" id="bgCur">0:00</span><input type="range" id="bgSeek" min="0" max="100" value="0" /><span class="time" id="bgDur">0:00</span></div>
+        </div>
+        <div class="cc-tile ac-tile" id="acTile">
+          <div class="ac-row">
+            <div class="ac-info">
+              <div class="ac-ico" id="acIco"></div>
+              <div class="ac-meta"><div class="ac-name">AC</div><div class="ac-sub" id="acStatus">Off</div></div>
+            </div>
+            <div class="ac-ctrl">
+              <button class="ac-mini" data-ac-temp="-1" title="Lower temperature">−</button>
+              <div class="ac-temp"><span id="acTemp">24</span><span class="ac-unit">°</span></div>
+              <button class="ac-mini" data-ac-temp="1" title="Raise temperature">+</button>
+            </div>
+            <button class="ac-power" id="acPower" title="Turn the AC on / off"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg></button>
+          </div>
+          <div class="segmented ac-modes" id="acModes"></div>
+        </div>
+        <div class="cast-url" id="castUrlBox" hidden>
+          <input id="castUrl" placeholder="https://…/video.mp4 or a YouTube link" />
+          <button class="pill primary" id="castSend">Send</button>
+        </div>
+        <div class="status-box" id="castMsg" hidden></div>
+
+        <div class="cc-tile sound" id="audioCard">
+          <div class="cc-label"><span>Sound</span><span class="muted-text" id="volOut"></span><span class="vol-value" id="volValue">–</span></div>
+          <div class="slider-row">
+            <button class="icon-btn small" id="muteBtn" title="Mute"><svg id="speakerIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/></svg></button>
+            <input type="range" id="volSlider" min="0" max="100" value="0" />
+            <svg class="vol-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8.5a4 4 0 0 1 0 7M18.5 6a7.5 7.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <div class="stepper"><button class="step" data-vol="-1">−</button><button class="step" data-vol="1">+</button></div>
+          </div>
+        </div>
+
+        <div class="cc-tile">
+          <div class="cc-label"><span>Favorites</span><button class="link" data-goto="apps">See all</button></div>
+          <div class="app-grid" id="favGrid"></div>
+        </div>
+
+        <div class="cc-tile">
+          <div class="cc-label"><span>Inputs</span><button class="link" data-goto="inputs">See all</button></div>
+          <div class="input-strip" id="inputListHome"></div>
+        </div>
+      </section>
+
+      <!-- REMOTE -->
+      <section class="view" data-view="remote">
+        <div class="dpad">
+          <button class="dpad-btn up" data-key="DPAD_UP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>
+          <button class="dpad-btn left" data-key="DPAD_LEFT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <button class="dpad-btn center" data-key="DPAD_CENTER">OK</button>
+          <button class="dpad-btn right" data-key="DPAD_RIGHT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          <button class="dpad-btn down" data-key="DPAD_DOWN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        </div>
+        <div class="btn-row">
+          <button class="pill" data-key="BACK"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5l-7 7 7 7M3 12h18"/></svg><span>Back</span></button>
+          <button class="pill" data-key="HOME"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg><span>Home</span></button>
+          <button class="pill" data-key="MENU"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button>
+        </div>
+        <div class="btn-row">
+          <button class="pill" data-key="ASSIST"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Assistant</span></button>
+          <button class="pill" data-key="SEARCH"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><span>Search</span></button>
+          <button class="pill" data-key="SETTINGS"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>TV settings</span></button>
+        </div>
+        <div class="split">
+          <div class="rocker">
+            <button data-vol="1">+</button>
+            <span>VOL</span>
+            <button data-vol="-1">−</button>
+          </div>
+          <div class="rocker-mid">
+            <button class="round" data-key="VOLUME_MUTE" title="Mute"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+            <button class="round" data-key="CAPTIONS" title="Captions">CC</button>
+            <button class="round" data-key="INFO" title="Info">i</button>
+          </div>
+          <div class="rocker">
+            <button data-key="CHANNEL_UP">∧</button>
+            <span>CH</span>
+            <button data-key="CHANNEL_DOWN">∨</button>
+          </div>
+        </div>
+        <div class="media-row">
+          <button class="media" data-key="MEDIA_PREVIOUS" title="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 6v12L9 12z"/></svg></button>
+          <button class="media" data-key="MEDIA_REWIND" title="Rewind"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 6v12L2 12zM22 6v12l-9-6z"/></svg></button>
+          <button class="media big play-toggle" title="Play / Pause"></button>
+          <button class="media" data-key="MEDIA_FAST_FORWARD" title="Fast forward"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 6v12l9-6zM2 6v12l9-6z"/></svg></button>
+          <button class="media" data-key="MEDIA_NEXT" title="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM4 6v12l11-6z"/></svg></button>
+        </div>
+        <div class="numpad">
+          <button data-key="NUM_1">1</button><button data-key="NUM_2">2</button><button data-key="NUM_3">3</button>
+          <button data-key="NUM_4">4</button><button data-key="NUM_5">5</button><button data-key="NUM_6">6</button>
+          <button data-key="NUM_7">7</button><button data-key="NUM_8">8</button><button data-key="NUM_9">9</button>
+          <button data-key="GUIDE">Guide</button><button data-key="NUM_0">0</button><button data-key="TV_INPUT">Input</button>
+        </div>
+        <p class="hint">Keyboard shortcuts: arrows, Enter, Esc (back), H (home), space (play/pause), +/− (volume), M (mute).</p>
+      </section>
+
+      <!-- APPS -->
+      <section class="view" data-view="apps">
+        <div class="section-title">All apps</div>
+        <div class="app-grid wide" id="allApps"></div>
+        <p class="hint">Right-click an app to add it to or remove it from Favorites.</p>
+        <div class="section-title" style="margin-top:14px">My content</div>
+        <p class="hint" style="margin:0 0 8px">Save the link of a show or video (Netflix, Crunchyroll, YouTube, Prime, Disney+…) and open it directly on the TV. Copy the URL from the service's website.</p>
+        <div class="app-grid wide" id="shortcutGrid"></div>
+        <div class="shortcut-form">
+          <input id="scName" placeholder="Name (e.g. One Piece)" />
+          <input id="scUrl" placeholder="https://www.netflix.com/title/80107103" />
+          <button class="pill primary" id="scAdd">Add</button>
+        </div>
+        <p class="hint">Right-click a content shortcut to remove it.</p>
+      </section>
+
+      <!-- INPUTS -->
+      <section class="view" data-view="inputs">
+        <div class="section-title">Inputs</div>
+        <div class="input-list" id="inputListFull"></div>
+        <p class="hint">The TV only reports that an input is on screen, not which one; the last one chosen here is marked.</p>
+      </section>
+
+      <!-- KEYBOARD -->
+      <section class="view" data-view="keyboard">
+        <div class="section-title">Type on the TV</div>
+        <p class="hint">Open a text field on the TV (for example YouTube search) and type here.</p>
+        <textarea id="textInput" rows="3" placeholder="Text to send…"></textarea>
+        <div class="btn-row">
+          <button class="pill primary" id="sendText">Send text</button>
+          <button class="pill" data-key="ENTER">Enter</button>
+          <button class="pill" data-key="DEL">Delete</button>
+        </div>
+        <div class="section-title">Paste and search</div>
+        <div class="btn-row">
+          <button class="pill" data-key="SEARCH">Open search</button>
+          <button class="pill" id="sendClipboard">Send clipboard</button>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" data-view="settings">
+        <div class="section-title">Television</div>
+        <div class="field">
+          <label>Name</label>
+          <input id="cfgName" placeholder="Living room" />
+        </div>
+        <div class="field">
+          <label>TV IP address</label>
+          <input id="cfgIp" placeholder="192.168.1.20" inputmode="decimal" />
+          <small>TV settings → Network & Internet → the connected network shows the IP.</small>
+        </div>
+        <div class="status-box" id="pairStatus"></div>
+        <div class="pin-box" id="pinBox" hidden>
+          <label>Code shown on the TV</label>
+          <div class="pin-row">
+            <input id="pinInput" maxlength="6" placeholder="ABC123" autocapitalize="characters" />
+            <button class="pill primary" id="pinSend">Pair</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="pill primary" id="cfgSave">Save and connect</button>
+          <button class="pill" id="cfgForget">Unpair</button>
+        </div>
+        <div class="section-title">HDMI inputs</div>
+        <p class="hint" style="margin:0 0 8px">Give each HDMI a name and a device type so it shows up with its logo.</p>
+        <div id="inputEditor"></div>
+        <div class="field">
+          <label>HDMI order correction</label>
+          <select id="cfgHdmi">
+            <option value="4">HDMI 1 = HW4 (default)</option>
+            <option value="3">HDMI 1 = HW3 (if the HDMI 1 button shows HDMI 2)</option>
+            <option value="5">HDMI 1 = HW5 (if the HDMI 2 button shows HDMI 1)</option>
+            <option value="6">HDMI 1 = HW6</option>
+          </select>
+          <small>MediaTek TVs number inputs internally; if the buttons are shifted, change it here.</small>
+        </div>
+        <div class="section-title">Air conditioner (Broadlink)</div>
+        <div class="status-box" id="acBl">Searching…</div>
+        <div class="btn-row">
+          <button class="pill" id="acReconnect">Reconnect</button>
+          <button class="pill" id="acRediscover">Search again</button>
+        </div>
+        <p class="hint" style="margin:0 0 8px">Learn the remote's codes: pick a mode and fan speed, tap a temperature and press that same setting on the AC remote while pointing it at the Broadlink. Learned codes turn green.</p>
+        <div class="field two">
+          <div><label>Mode</label><select id="learnMode"></select></div>
+          <div><label>Fan</label><select id="learnFan"></select></div>
+        </div>
+        <div class="learn-grid" id="acLearnGrid"></div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="pill" id="acLearnOff">Learn “Off”</button>
+          <button class="pill primary" id="acLearnSeq">Learn all in sequence</button>
+        </div>
+        <div class="status-box" id="acLearnStatus" hidden></div>
+        <div class="btn-row" id="acLearnCancelRow" hidden><button class="pill danger" id="acLearnCancel">Cancel learning</button></div>
+        <div class="field two">
+          <div><label>Minimum temperature</label><input id="acMin" inputmode="numeric" /></div>
+          <div><label>Maximum temperature</label><input id="acMax" inputmode="numeric" /></div>
+        </div>
+        <div class="section-title">Sound</div>
+        <label class="switch-row"><span>Sound bar connected</span><input type="checkbox" id="cfgSoundbar" /></label>
+        <div class="field two">
+          <div><label>Name</label><input id="cfgAudioName" placeholder="Sound bar" /></div>
+          <div><label>TV units per sound bar unit</label><input id="cfgAudioRatio" inputmode="numeric" placeholder="3" /></div>
+        </div>
+        <small class="hint" style="display:block;margin:-4px 0 10px">E.g. if TV 3 = sound bar 1, enter 3. The panel shows and moves the volume in sound bar units.</small>
+        <div class="section-title">Apps without a direct link (ADB)</div>
+        <label class="switch-row"><span>Launch apps via ADB</span><input type="checkbox" id="cfgAdb" /></label>
+        <div class="status-box" id="adbStatus"></div>
+        <div class="btn-row"><button class="pill" id="adbConnectBtn">Connect now</button></div>
+        <small class="hint" style="display:block;margin:0 0 10px">Needed for Stremio, Kick and AirPlay Server. On the TV: Settings → System → About → tap “Android build” 7 times → Developer options → enable “USB debugging” (and “Network debugging” if present). When connecting, accept the prompt on the TV with “Always allow”.</small>
+        <div class="section-title">Application</div>
+        <div class="field">
+          <label>Language</label>
+          <select id="cfgLanguage"></select>
+        </div>
+        <label class="switch-row">
+          <span>Open at login</span>
+          <input type="checkbox" id="cfgLogin" />
+        </label>
+        <div class="btn-row">
+          <button class="pill danger" id="quitBtn">Quit the app</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" hidden></div>
+    <footer class="footer">
+      <span class="conn" id="connStatus"><span class="dot"></span><span id="connText">Not connected</span></span>
+      <span class="footer-ip" id="footerIp"></span>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+{
+  "name": "couch-control",
+  "productName": "Couch Control",
+  "version": "1.0.0",
+  "description": "Menu bar / tray remote for Google TV (Android TV) plus air conditioner control through a Broadlink IR blaster. macOS and Windows.",
+  "author": {
+    "name": "rusherdv",
+    "url": "https://github.com/rusherdv"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rusherdv/couch-control.git"
+  },
+  "homepage": "https://github.com/rusherdv/couch-control",
+  "bugs": "https://github.com/rusherdv/couch-control/issues",
+  "keywords": [
+    "google-tv",
+    "android-tv",
+    "remote",
+    "menubar",
+    "tray",
+    "broadlink",
+    "air-conditioner",
+    "chromecast",
+    "electron"
+  ],
+  "main": "main.mjs",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "cross-env ELECTRON_RUN_AS_NODE= electron .",
+    "dev": "cross-env ELECTRON_RUN_AS_NODE= electron . --dev",
+    "setup:adb": "node scripts/setup-adb.mjs",
+    "gen:tray": "cross-env ELECTRON_RUN_AS_NODE= electron tools/gen-tray-icons.mjs",
+    "gen:icon": "cross-env ELECTRON_RUN_AS_NODE= electron tools/gen-app-icon.mjs",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "@kud/androidtv-remote": "^0.1.2",
+    "castv2-client": "^1.2.0",
+    "node-broadlink": "^2.4.1"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "dev.rusher.couchcontrol",
+    "productName": "Couch Control",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.mjs",
+      "preload.cjs",
+      "cast.mjs",
+      "adb.mjs",
+      "ac.mjs",
+      "shared/**",
+      "renderer/**",
+      "assets/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "vendor/platform-tools",
+        "to": "platform-tools",
+        "filter": [
+          "adb",
+          "adb.exe",
+          "*.dll",
+          "NOTICE.txt"
+        ]
+      }
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "extendInfo": {
+        "LSUIElement": true,
+        "NSLocalNetworkUsageDescription": "Couch Control talks to your TV, Chromecast and Broadlink on the local network."
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "dmg": {
+      "sign": false
+    }
+  }
+}
